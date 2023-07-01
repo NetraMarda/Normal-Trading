@@ -1,0 +1,231 @@
+import {
+  TableCell,
+  TableRow,
+  TableHead,
+  Table,
+  Button,
+  Box,
+  Typography,
+  TextField,
+} from "@mui/material";
+import { React, useState, useEffect } from "react";
+import { getAllSalesData } from "../../api/sales/sales.request";
+import SalesForm from "./sales";
+import CustomIconButton from "../../components/Buttons/CustomIconButton";
+import { Search } from "@mui/icons-material";
+import { useIds } from "../IdsContext/IdsContext";
+import { Link } from "react-router-dom";
+import { useColors } from "../../hooks/use-colors";
+
+const SalesRecords = () => {
+  const { ids, setIds } = useIds();
+  const [salesData, setSalesData] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [redirectToSalesForm, setRedirectToSalesForm] = useState(false);
+  const [selectedData, setSelectedData] = useState(null);
+
+  useEffect(() => {
+    const fetchSalesData = async () => {
+      try {
+        const response = await getAllSalesData();
+        setSalesData(response.data);
+      } catch (error) {
+        console.error("Failed to fetch sales data", error);
+      }
+    };
+    fetchSalesData();
+  }, []);
+
+  const handleSearch = () => {
+    const filteredData = searchQuery
+      ? salesData.filter((data) => {
+          return parseInt(data.docNo) === parseInt(searchQuery);
+        })
+      : salesData;
+    setSalesData(filteredData);
+  };
+
+  const handleClick = (sales) => {
+    //   console.log(item);
+    //const salesId = sales.id;
+    // setIds((prev) => ({ ...prev, salesId }));
+    setRedirectToSalesForm(true);
+    setSelectedData(sales);
+    //console.log(setSelectedData(data));
+  };
+
+  const handleAddClick = () => {
+    setRedirectToSalesForm(true);
+  };
+
+  if (redirectToSalesForm) {
+    return <SalesForm data={selectedData} />;
+  }
+
+  const colors = useColors();
+
+  return (
+    <Box
+      sx={{
+        maxWidth: "95%",
+        maxHeight: "100%",
+      }}
+    >
+      <Typography
+        sx={{
+          textTransform: "uppercase",
+          fontWeight: 500,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          mt: 3,
+        }}
+        variant="h4"
+      >
+        Sales Records
+      </Typography>
+      <Box
+        sx={{
+          mt: 3,
+          display: "flex",
+          justifyContent: "space-between",
+          mb: 3,
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+          }}
+        >
+          <Button
+            sx={{ color: "black", bgcolor: colors.green[500] }}
+            onClick={() => {
+              handleAddClick();
+            }}
+          >
+            <Link
+              to="/salesReturn"
+              style={{
+                color: "black",
+                textDecoration: "none",
+              }}
+            >
+              Add Data
+            </Link>
+          </Button>
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "end",
+            gap: 1,
+          }}
+        >
+          <TextField
+            id="search-bar"
+            className="text"
+            label="Enter a Document Number"
+            variant="outlined"
+            placeholder="Search..."
+            value={searchQuery}
+            size="small"
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <CustomIconButton onClick={handleSearch}>
+            <Search />
+          </CustomIconButton>
+        </Box>
+      </Box>
+
+      <Table
+        stickyHeader
+        aria-label="sticky table"
+        style={{
+          backgroundColor: "#f5f5f5",
+        }}
+      >
+        <TableHead>
+          <TableRow>
+            <TableCell style={{ fontWeight: "bold" }}>id</TableCell>
+            <TableCell style={{ fontWeight: "bold" }}> tranType</TableCell>
+            <TableCell style={{ fontWeight: "bold" }}>cashCredit</TableCell>
+            <TableCell style={{ fontWeight: "bold" }}>docNo</TableCell>
+            <TableCell style={{ fontWeight: "bold" }}>docDate</TableCell>
+            <TableCell style={{ fontWeight: "bold" }}>billTo</TableCell>
+            <TableCell style={{ fontWeight: "bold" }}>shipTo</TableCell>
+            <TableCell style={{ fontWeight: "bold" }}>broker</TableCell>
+              <TableCell style={{ fontWeight: "bold" }}>LRNo</TableCell>
+              <TableCell style={{ fontWeight: "bold" }}>truckNo</TableCell>
+              <TableCell style={{ fontWeight: "bold" }}>
+              taxableAmount
+              </TableCell>
+              {/* <TableCell style={{ fontWeight: "bold" }}>
+              CGSTAmount
+              </TableCell>
+              <TableCell style={{ fontWeight: "bold" }}>SGSTAmount</TableCell>
+              <TableCell style={{ fontWeight: "bold" }}>IGSTAmount</TableCell>
+              <TableCell style={{ fontWeight: "bold" }}>postage</TableCell> */}
+            <TableCell style={{ fontWeight: "bold" }}>amount</TableCell>
+            {/* <TableCell style={{ fontWeight: "bold" }}>TCSPar</TableCell>
+              <TableCell style={{ fontWeight: "bold" }}>TCSAmount</TableCell> */}
+            <TableCell style={{ fontWeight: "bold" }}>companyCode</TableCell>
+            <TableCell style={{ fontWeight: "bold" }}>yearCode</TableCell>
+            <TableCell style={{ fontWeight: "bold" }}>createdBy</TableCell>
+            <TableCell style={{ fontWeight: "bold" }}>modifiedBy</TableCell>
+            <TableCell style={{ fontWeight: "bold" }}>ac</TableCell>
+            <TableCell style={{ fontWeight: "bold" }}>bc</TableCell>
+            {/* <TableCell style={{ fontWeight: "bold" }}>TDSRate</TableCell>
+              <TableCell style={{ fontWeight: "bold" }}>TDSAmount</TableCell> */}
+          </TableRow>
+        </TableHead>
+
+        <tbody>
+          {salesData
+           .filter((data) => data.tranType === "SR") 
+          .map((data) => (
+            <TableRow
+              key={data.id}
+              onClick={() => {
+                handleClick(data);
+              }}
+              sx={{ cursor: "pointer" }}
+            >
+              <TableCell>{data.id}</TableCell>
+              <TableCell>{data.tranType}</TableCell>
+              <TableCell>{data.cashCredit}</TableCell>
+              <TableCell>{data.docNo}</TableCell>
+              <TableCell>{data.docDate}</TableCell>
+              <TableCell>{data.billTo}</TableCell>
+              <TableCell>{data.shipTo}</TableCell>
+              <TableCell>{data.broker}</TableCell>
+                <TableCell>{data.LRNo}</TableCell>
+                <TableCell>{data.truckNo}</TableCell>
+                <TableCell>{data.taxableAmount}</TableCell>
+                {/* <TableCell>{data.CGSTAmount}</TableCell>
+                <TableCell>{data.SGSTAmount}</TableCell>
+                <TableCell>{data.IGSTAmount}</TableCell>
+                <TableCell>{data.postage}</TableCell> */}
+              <TableCell>{data.amount}</TableCell>
+              {/* <TableCell>{data.TCSPar}</TableCell>
+                <TableCell>{data.TCSAmount}</TableCell> */}
+              <TableCell>{data.companyCode}</TableCell>
+              <TableCell>{data.yearCode}</TableCell>
+              <TableCell>{data.createdBy}</TableCell>
+              <TableCell>{data.mofifiedBy}</TableCell>
+              <TableCell>{data.ac}</TableCell>
+              <TableCell>{data.bc}</TableCell>
+              {/* <TableCell>{data.TDSRate}</TableCell>
+                <TableCell>{data.TDSAmount}</TableCell> */}
+            </TableRow>
+          ))}
+        </tbody>
+      </Table>
+
+      {/* {redirectToCompanyForm && <CompanyForm />} */}
+    </Box>
+  );
+};
+
+export default SalesRecords;
